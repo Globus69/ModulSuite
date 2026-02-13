@@ -1,0 +1,6 @@
+{
+  "name": "Duplicate Remover",
+  "description": "Findet und entfernt Duplikat-Dateien mit SHA-256 Hashing",
+  "icon": "🗂️",
+  "script": "launch.sh"
+}

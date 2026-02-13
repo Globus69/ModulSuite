@@ -91,13 +91,24 @@ Eine lokale, plugin-basierte Desktop-Anwendung für macOS, die Module über JSON
 }
 ```
 
-## 🧪 Beispiel-Module
+## 🧪 Verfügbare Module
 
-Die App kommt mit drei Beispiel-Modulen:
+Die App kommt mit fünf Beispiel-Modulen:
 
+### Einfache Tools:
 1. **Hello World** 👋 - Einfaches Test-Modul
 2. **System Info** 💻 - Zeigt Systeminformationen
 3. **File Counter** 📁 - Zählt Dateien im Home-Verzeichnis
+
+### Professionelle Tools:
+4. **Duplicate Remover** 🗂️ - Findet und entfernt Duplikat-Dateien mit SHA-256 Hashing
+   - Single Folder Mode & Primary/Secondary Mode
+   - Live Activity Log & Pause/Abort-Funktion
+
+5. **Folder Merge** 📂 - Führt mehrere Ordner zusammen
+   - Bitgenaue Duplikat-Erkennung
+   - Intelligentes Ordner-Matching
+   - Automatisches Aufräumen leerer Ordner
 
 ## 🔧 Erweiterte Nutzung
 
