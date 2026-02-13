@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
-ModulSuite - Lokale Plugin-basierte Desktop-Anwendung
-Scannt ~/ModulSuite/Plugins/ nach JSON-definierten Modulen
+SWS Suite - Lokale Plugin-basierte Desktop-Anwendung
+Scannt ~/SWS_SUITE/Plugins/ nach JSON-definierten Modulen
 """
 
 import os
@@ -49,17 +49,99 @@ class Module:
             return False, f"Fehler: {str(e)}"
 
 
+class ModernButton(tk.Canvas):
+    """Moderner Button mit Hover-Effekt"""
+    def __init__(self, parent, text, icon, description, command, **kwargs):
+        super().__init__(parent, **kwargs)
+
+        self.command = command
+        self.text = text
+        self.icon = icon
+        self.description = description
+
+        # Farben
+        self.bg_normal = "#2D3E50"
+        self.bg_hover = "#34495E"
+        self.fg_color = "#ECF0F1"
+        self.accent_color = "#3498DB"
+
+        self.configure(
+            bg=self.bg_normal,
+            highlightthickness=0,
+            relief="flat"
+        )
+
+        self.bind("<Enter>", self._on_enter)
+        self.bind("<Leave>", self._on_leave)
+        self.bind("<Button-1>", self._on_click)
+        self.bind("<Configure>", self._on_resize)
+
+    def _on_resize(self, event):
+        """Zeichnet Button neu bei Größenänderung"""
+        self.delete("all")
+        w, h = event.width, event.height
+
+        # Icon
+        self.create_text(
+            w/2, h/3,
+            text=self.icon,
+            font=("Arial", 40),
+            fill=self.fg_color,
+            tags="content"
+        )
+
+        # Name
+        self.create_text(
+            w/2, h/2 + 10,
+            text=self.text,
+            font=("Arial", 14, "bold"),
+            fill=self.fg_color,
+            tags="content"
+        )
+
+        # Beschreibung
+        if self.description:
+            self.create_text(
+                w/2, h - 25,
+                text=self.description[:40] + "..." if len(self.description) > 40 else self.description,
+                font=("Arial", 9),
+                fill="#BDC3C7",
+                tags="content",
+                width=w-20
+            )
+
+    def _on_enter(self, event):
+        self.configure(bg=self.bg_hover)
+        self.configure(cursor="hand2")
+
+    def _on_leave(self, event):
+        self.configure(bg=self.bg_normal)
+
+    def _on_click(self, event):
+        if self.command:
+            self.command()
+
+
 class ModulSuite:
     """Hauptanwendung"""
 
     def __init__(self):
-        self.plugins_dir = Path.home() / "ModulSuite" / "Plugins"
+        self.plugins_dir = Path.home() / "SWS_SUITE" / "Plugins"
         self.modules: List[Module] = []
 
         # GUI Setup
         self.root = tk.Tk()
-        self.root.title("ModulSuite")
-        self.root.geometry("800x600")
+        self.root.title("SWS Suite")
+        self.root.geometry("1200x800")
+        self.root.minsize(800, 600)
+
+        # Farben
+        self.bg_main = "#1A1A2E"
+        self.bg_secondary = "#16213E"
+        self.accent = "#0F3460"
+        self.text_color = "#E94560"
+
+        self.root.configure(bg=self.bg_main)
 
         self.setup_ui()
         self.load_modules()
@@ -68,44 +150,60 @@ class ModulSuite:
         """Erstellt die Benutzeroberfläche"""
 
         # Header
-        header = tk.Frame(self.root, bg="#2c3e50", height=60)
+        header = tk.Frame(self.root, bg=self.accent, height=80)
         header.pack(fill=tk.X)
+        header.pack_propagate(False)
 
         title = tk.Label(
             header,
-            text="📦 ModulSuite",
-            font=("Arial", 20, "bold"),
-            bg="#2c3e50",
-            fg="white"
+            text="⚡ SWS SUITE",
+            font=("Arial", 28, "bold"),
+            bg=self.accent,
+            fg="#ECF0F1"
         )
-        title.pack(pady=10)
+        title.pack(side=tk.LEFT, padx=30, pady=20)
 
-        # Info Label
+        # Info & Reload Container
+        info_frame = tk.Frame(header, bg=self.accent)
+        info_frame.pack(side=tk.RIGHT, padx=30)
+
         info = tk.Label(
-            self.root,
-            text=f"Plugin-Verzeichnis: {self.plugins_dir}",
+            info_frame,
+            text=f"📂 {self.plugins_dir}",
             font=("Arial", 10),
-            fg="gray"
+            bg=self.accent,
+            fg="#BDC3C7"
         )
-        info.pack(pady=5)
+        info.pack(anchor="e")
 
-        # Reload Button
         reload_btn = tk.Button(
-            self.root,
-            text="🔄 Module neu laden",
+            info_frame,
+            text="🔄 Neu laden",
             command=self.reload_modules,
-            font=("Arial", 11)
+            font=("Arial", 11, "bold"),
+            bg="#2C3E50",
+            fg="#ECF0F1",
+            relief=tk.FLAT,
+            padx=20,
+            pady=8,
+            cursor="hand2",
+            borderwidth=0
         )
-        reload_btn.pack(pady=5)
+        reload_btn.pack(pady=(5, 0))
 
-        # Scrollbarer Module-Bereich
-        canvas_frame = tk.Frame(self.root)
-        canvas_frame.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
+        # Main Content Area mit Scrollbar
+        content_frame = tk.Frame(self.root, bg=self.bg_main)
+        content_frame.pack(fill=tk.BOTH, expand=True, padx=20, pady=20)
 
-        canvas = tk.Canvas(canvas_frame)
-        scrollbar = ttk.Scrollbar(canvas_frame, orient="vertical", command=canvas.yview)
+        # Canvas für scrollbare Module
+        canvas = tk.Canvas(
+            content_frame,
+            bg=self.bg_main,
+            highlightthickness=0
+        )
+        scrollbar = ttk.Scrollbar(content_frame, orient="vertical", command=canvas.yview)
 
-        self.modules_frame = tk.Frame(canvas)
+        self.modules_frame = tk.Frame(canvas, bg=self.bg_main)
         self.modules_frame.bind(
             "<Configure>",
             lambda e: canvas.configure(scrollregion=canvas.bbox("all"))
@@ -117,18 +215,51 @@ class ModulSuite:
         canvas.pack(side="left", fill="both", expand=True)
         scrollbar.pack(side="right", fill="y")
 
+        # Bind mousewheel
+        canvas.bind_all("<MouseWheel>", lambda e: canvas.yview_scroll(int(-1*(e.delta/120)), "units"))
+
         # Output Bereich
-        output_label = tk.Label(self.root, text="📄 Ausgabe:", font=("Arial", 12, "bold"))
-        output_label.pack(anchor="w", padx=10)
+        output_frame = tk.Frame(self.root, bg=self.bg_secondary)
+        output_frame.pack(fill=tk.BOTH, padx=20, pady=(0, 20))
+
+        output_header = tk.Frame(output_frame, bg=self.bg_secondary)
+        output_header.pack(fill=tk.X, pady=(10, 5))
+
+        output_label = tk.Label(
+            output_header,
+            text="📄 Ausgabe",
+            font=("Arial", 12, "bold"),
+            bg=self.bg_secondary,
+            fg="#ECF0F1"
+        )
+        output_label.pack(side=tk.LEFT, padx=10)
+
+        clear_btn = tk.Button(
+            output_header,
+            text="🗑️ Löschen",
+            command=lambda: self.output_text.delete(1.0, tk.END),
+            font=("Arial", 9),
+            bg="#E74C3C",
+            fg="white",
+            relief=tk.FLAT,
+            padx=10,
+            pady=3,
+            cursor="hand2"
+        )
+        clear_btn.pack(side=tk.RIGHT, padx=10)
 
         self.output_text = scrolledtext.ScrolledText(
-            self.root,
-            height=10,
-            font=("Courier", 10),
-            bg="#1e1e1e",
-            fg="#00ff00"
+            output_frame,
+            height=8,
+            font=("Menlo", 10),
+            bg="#0D1117",
+            fg="#58A6FF",
+            insertbackground="#58A6FF",
+            relief=tk.FLAT,
+            padx=10,
+            pady=10
         )
-        self.output_text.pack(fill=tk.BOTH, padx=10, pady=5, expand=False)
+        self.output_text.pack(fill=tk.BOTH, padx=10, pady=(0, 10))
 
     def load_modules(self):
         """Scannt das Plugin-Verzeichnis und lädt alle Module"""
@@ -153,7 +284,7 @@ class ModulSuite:
         self.render_modules()
 
         if not self.modules:
-            self.log("⚠️  Keine Module gefunden. Erstelle Beispiel-Module...")
+            self.log("⚠️  Keine Module gefunden.")
             self.log(f"💡 Lege Module in: {self.plugins_dir}")
 
     def render_modules(self):
@@ -166,66 +297,52 @@ class ModulSuite:
             no_modules = tk.Label(
                 self.modules_frame,
                 text="Keine Module gefunden\n\nLege Module im Plugins-Ordner ab.",
-                font=("Arial", 12),
-                fg="gray",
-                pady=50
+                font=("Arial", 14),
+                fg="#7F8C8D",
+                bg=self.bg_main,
+                pady=100
             )
             no_modules.pack()
             return
 
-        # Erstellt Button-Grid (3 Spalten)
+        # Responsive Grid (3-4 Spalten je nach Fensterbreite)
+        self.modules_frame.update_idletasks()
+        frame_width = self.modules_frame.winfo_width()
+        cols = max(2, min(4, frame_width // 280))
+
+        # Erstellt Button-Grid
         for idx, module in enumerate(self.modules):
-            row = idx // 3
-            col = idx % 3
+            row = idx // cols
+            col = idx % cols
 
-            btn_frame = tk.Frame(
+            btn = ModernButton(
                 self.modules_frame,
-                bg="white",
-                relief=tk.RAISED,
-                borderwidth=2
-            )
-            btn_frame.grid(row=row, column=col, padx=10, pady=10, sticky="nsew")
-
-            # Module Button
-            btn = tk.Button(
-                btn_frame,
-                text=f"{module.icon}\n{module.name}",
-                font=("Arial", 14),
-                width=15,
-                height=5,
+                text=module.name,
+                icon=module.icon,
+                description=module.description,
                 command=lambda m=module: self.execute_module(m),
-                bg="#3498db",
-                fg="white",
-                relief=tk.FLAT,
-                cursor="hand2"
+                width=260,
+                height=180
             )
-            btn.pack(fill=tk.BOTH, expand=True, padx=2, pady=2)
+            btn.grid(row=row, column=col, padx=10, pady=10, sticky="nsew")
 
-            # Beschreibung
-            if module.description:
-                desc = tk.Label(
-                    btn_frame,
-                    text=module.description,
-                    font=("Arial", 9),
-                    fg="gray",
-                    wraplength=150
-                )
-                desc.pack(pady=5)
-
-        # Grid-Konfiguration
-        for i in range(3):
+        # Grid-Konfiguration für responsives Layout
+        for i in range(cols):
             self.modules_frame.columnconfigure(i, weight=1)
+
+        for i in range((len(self.modules) + cols - 1) // cols):
+            self.modules_frame.rowconfigure(i, weight=0)
 
     def execute_module(self, module: Module):
         """Führt ein Modul aus"""
         self.log(f"\n{'='*60}")
-        self.log(f"▶️  Führe aus: {module.name}")
+        self.log(f"▶️  {module.name}")
         self.log(f"{'='*60}")
 
         success, output = module.execute()
 
         if success:
-            self.log(f"✅ Erfolgreich ausgeführt:\n{output}")
+            self.log(f"✅ Erfolgreich:\n{output}")
         else:
             self.log(f"❌ Fehler:\n{output}")
 
