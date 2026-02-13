@@ -305,10 +305,8 @@ class ModulSuite:
             no_modules.pack()
             return
 
-        # Responsive Grid (3-4 Spalten je nach Fensterbreite)
-        self.modules_frame.update_idletasks()
-        frame_width = self.modules_frame.winfo_width()
-        cols = max(2, min(4, frame_width // 280))
+        # Festes 4-Spalten Grid
+        cols = 4
 
         # Erstellt Button-Grid
         for idx, module in enumerate(self.modules):
@@ -326,7 +324,7 @@ class ModulSuite:
             )
             btn.grid(row=row, column=col, padx=10, pady=10, sticky="nsew")
 
-        # Grid-Konfiguration für responsives Layout
+        # Grid-Konfiguration
         for i in range(cols):
             self.modules_frame.columnconfigure(i, weight=1)
 
