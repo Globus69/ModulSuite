@@ -1,0 +1,8 @@
+{
+  "name": "Dedup Cleaner",
+  "description": "Nummerierte Datei-Duplikate erkennen und löschen",
+  "icon": "🔍",
+  "version": "1.0",
+  "script": "app.py",
+  "launch_mode": "gui"
+}

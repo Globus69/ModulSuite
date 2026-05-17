@@ -25,19 +25,19 @@ C = {
     "log_text":  "#58A6FF",
 }
 
-def styled_btn(parent, text, command, color=None, width=None, **kwargs):
-    """Einheitlicher Button im Dark-Theme."""
-    bg = color or C["card"]
-    btn = tk.Button(
+def btn(parent, text, command, color=None, width=None, **kwargs):
+    return tk.Button(
         parent, text=text, command=command,
-        bg=bg, fg=C["text"], activebackground=C["accent"],
+        bg=color or C["card"], fg=C["text"], activebackground=C["accent"],
         activeforeground=C["text"], relief=tk.FLAT,
         font=("Arial", 11, "bold"), cursor="hand2",
-        padx=16, pady=8, bd=0,
+        padx=14, pady=8, bd=0,
         **({"width": width} if width else {}),
         **kwargs,
     )
-    return btn
+
+# Alias für Rückwärtskompatibilität im restlichen Code
+styled_btn = btn
 
 
 class DuplicateFileRemover:
