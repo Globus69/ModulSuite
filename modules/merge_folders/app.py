@@ -36,9 +36,12 @@ def files_identical(a, b):
         return False
 
 def btn(parent, text, cmd, color=None, **kw):
+    bg = color or C["card"]
     return tk.Button(parent, text=text, command=cmd,
-        bg=color or C["card"], fg=C["text"], activebackground=C["accent"],
-        activeforeground=C["text"], relief=tk.FLAT, font=("Arial", 11, "bold"),
+        bg=bg, fg=C["text"], activebackground=C["accent"],
+        activeforeground=C["text"], disabledforeground=C["muted"],
+        highlightbackground=bg, highlightthickness=0,
+        relief=tk.FLAT, font=("Arial", 11, "bold"),
         cursor="hand2", padx=14, pady=8, bd=0, **kw)
 
 

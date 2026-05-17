@@ -26,11 +26,13 @@ C = {
 }
 
 def btn(parent, text, command, color=None, width=None, **kwargs):
+    bg = color or C["card"]
     return tk.Button(
         parent, text=text, command=command,
-        bg=color or C["card"], fg=C["text"], activebackground=C["accent"],
-        activeforeground=C["text"], relief=tk.FLAT,
-        font=("Arial", 11, "bold"), cursor="hand2",
+        bg=bg, fg=C["text"], activebackground=C["accent"],
+        activeforeground=C["text"], disabledforeground=C["muted"],
+        highlightbackground=bg, highlightthickness=0,
+        relief=tk.FLAT, font=("Arial", 11, "bold"), cursor="hand2",
         padx=14, pady=8, bd=0,
         **({"width": width} if width else {}),
         **kwargs,
@@ -114,9 +116,11 @@ class DuplicateFileRemover:
             rb = tk.Radiobutton(
                 card, text=label, variable=self.mode_var, value=value,
                 command=self.on_mode_change,
-                bg=C["panel"], fg=C["text"], activebackground=C["panel"],
-                selectcolor=C["card"], font=("Arial", 12, "bold"),
-                cursor="hand2",
+                bg=C["panel"], fg=C["text"],
+                activebackground=C["panel"], activeforeground=C["accent"],
+                selectcolor=C["accent"],
+                highlightbackground=C["panel"], highlightthickness=0,
+                font=("Arial", 12, "bold"), cursor="hand2",
             )
             rb.pack(anchor=tk.W)
             tk.Label(card, text=desc, bg=C["panel"], fg=C["muted"],
