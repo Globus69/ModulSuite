@@ -109,7 +109,7 @@ class FileMergeApp:
             lambda e: scroll_canvas.yview_scroll(int(-1 * (e.delta / 120)), "units"))
 
         main = self._inner
-        pad = {"padx": 24, "pady": 0}
+        pad = {"padx": 24}
 
         self._section(main, "1", "Zielordner", C["target"])
         self._build_target(main, **pad)
