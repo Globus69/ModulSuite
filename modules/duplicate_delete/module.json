@@ -1,0 +1,8 @@
+{
+  "name": "Duplicate Delete",
+  "description": "Findet & entfernt identische Dateien (SHA-256)",
+  "icon": "🗂️",
+  "version": "2.0.1",
+  "script": "duplicate_remover.py",
+  "launch_mode": "gui"
+}

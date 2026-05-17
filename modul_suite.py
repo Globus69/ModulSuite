@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 SWS Suite - Lokale Plugin-basierte Desktop-Anwendung
-Scannt ~/SWS_SUITE/Plugins/ nach JSON-definierten Modulen
+Scannt ./modules/ nach JSON-definierten Modulen
 """
 
 import os
@@ -19,7 +19,9 @@ class Module:
         self.name = config.get("name", "Unnamed")
         self.description = config.get("description", "")
         self.icon = config.get("icon", "📦")
+        self.version = config.get("version", "")
         self.script = config.get("script", "")
+        self.launch_mode = config.get("launch_mode", "cli")
         self.script_path = path / self.script if self.script else None
 
     def execute(self) -> tuple:
@@ -28,20 +30,24 @@ class Module:
             return False, f"Skript nicht gefunden: {self.script_path}"
 
         try:
-            # Macht das Skript ausführbar
-            os.chmod(self.script_path, 0o755)
-
-            # Führt das Skript aus
-            result = subprocess.run(
-                [str(self.script_path)],
-                cwd=self.path,
-                capture_output=True,
-                text=True,
-                timeout=30
-            )
-
-            output = result.stdout if result.stdout else result.stderr
-            return result.returncode == 0, output
+            if self.launch_mode == "gui":
+                # GUI-Apps als separaten Prozess starten (fire-and-forget)
+                subprocess.Popen(
+                    ["python3", str(self.script_path)],
+                    cwd=self.path
+                )
+                return True, f"{self.name} gestartet."
+            else:
+                # CLI-Apps: Output erfassen
+                result = subprocess.run(
+                    ["python3", str(self.script_path)],
+                    cwd=self.path,
+                    capture_output=True,
+                    text=True,
+                    timeout=30
+                )
+                output = result.stdout if result.stdout else result.stderr
+                return result.returncode == 0, output
 
         except subprocess.TimeoutExpired:
             return False, "Timeout: Skript hat zu lange gedauert (>30s)"
@@ -126,7 +132,7 @@ class ModulSuite:
     """Hauptanwendung"""
 
     def __init__(self):
-        self.plugins_dir = Path.home() / "SWS_SUITE" / "Plugins"
+        self.plugins_dir = Path(__file__).parent / "modules"
         self.modules: List[Module] = []
 
         # GUI Setup
@@ -313,9 +319,12 @@ class ModulSuite:
             row = idx // cols
             col = idx % cols
 
+            label = module.name
+            if module.version:
+                label = f"{module.name} v{module.version}"
             btn = ModernButton(
                 self.modules_frame,
-                text=module.name,
+                text=label,
                 icon=module.icon,
                 description=module.description,
                 command=lambda m=module: self.execute_module(m),
