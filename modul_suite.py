@@ -182,24 +182,16 @@ class ModulSuite:
         )
         info.pack(anchor="e")
 
-        reload_btn = tk.Button(
+        reload_btn = tk.Label(
             info_frame,
             text="🔄 Neu laden",
-            command=self.reload_modules,
             font=("Arial", 11, "bold"),
-            bg="#2C3E50",
-            fg="#ECF0F1",
-            activebackground="#3498DB",
-            activeforeground="#ECF0F1",
-            disabledforeground="#7F8C8D",
-            highlightbackground="#2C3E50",
-            highlightthickness=0,
-            relief=tk.FLAT,
-            padx=20,
-            pady=8,
-            cursor="hand2",
-            borderwidth=0
+            bg="#2C3E50", fg="#ECF0F1",
+            padx=20, pady=8, cursor="hand2",
         )
+        reload_btn.bind("<Button-1>", lambda e: self.reload_modules())
+        reload_btn.bind("<Enter>", lambda e: reload_btn.config(bg="#3498DB"))
+        reload_btn.bind("<Leave>", lambda e: reload_btn.config(bg="#2C3E50"))
         reload_btn.pack(pady=(5, 0))
 
         # Main Content Area mit Scrollbar
@@ -245,22 +237,16 @@ class ModulSuite:
         )
         output_label.pack(side=tk.LEFT, padx=10)
 
-        clear_btn = tk.Button(
+        clear_btn = tk.Label(
             output_header,
             text="🗑️ Löschen",
-            command=lambda: self.output_text.delete(1.0, tk.END),
             font=("Arial", 9),
-            bg="#E74C3C",
-            fg="#ECF0F1",
-            activebackground="#C0392B",
-            activeforeground="#ECF0F1",
-            highlightbackground="#E74C3C",
-            highlightthickness=0,
-            relief=tk.FLAT,
-            padx=10,
-            pady=3,
-            cursor="hand2"
+            bg="#E74C3C", fg="#ECF0F1",
+            padx=10, pady=3, cursor="hand2",
         )
+        clear_btn.bind("<Button-1>", lambda e: self.output_text.delete(1.0, tk.END))
+        clear_btn.bind("<Enter>", lambda e: clear_btn.config(bg="#C0392B"))
+        clear_btn.bind("<Leave>", lambda e: clear_btn.config(bg="#E74C3C"))
         clear_btn.pack(side=tk.RIGHT, padx=10)
 
         self.output_text = scrolledtext.ScrolledText(

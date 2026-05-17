@@ -30,14 +30,50 @@ def files_identical(a, b):
     except OSError:
         return False
 
+class _Btn(tk.Label):
+    """macOS-sicherer Button via tk.Label — respektiert bg/fg vollständig."""
+    def __init__(self, parent, text, command, bg, fg=None, **kw):
+        self._cmd    = command
+        self._bg     = bg
+        self._fg     = fg or C["text"]
+        self._active = True
+        super().__init__(parent, text=text, bg=bg, fg=self._fg,
+                         font=("Arial", 11, "bold"), padx=14, pady=8,
+                         cursor="hand2", **kw)
+        self.bind("<Button-1>", self._click)
+        self.bind("<Enter>",    self._hover_on)
+        self.bind("<Leave>",    self._hover_off)
+
+    def _click(self, _):
+        if self._active: self._cmd()
+
+    def _hover_on(self, _):
+        if self._active: super().configure(bg=C["accent"])
+
+    def _hover_off(self, _):
+        super().configure(bg=self._bg if self._active else C["card"])
+
+    def configure(self, **kw):
+        if "state" in kw:
+            state = kw.pop("state")
+            if "bg" in kw:
+                self._bg = kw.pop("bg")
+            if state == tk.DISABLED:
+                self._active = False
+                super().configure(bg=C["card"], fg=C["muted"], cursor="", **kw)
+            else:
+                self._active = True
+                super().configure(bg=self._bg, fg=self._fg, cursor="hand2", **kw)
+        else:
+            if "bg" in kw:
+                self._bg = kw["bg"]
+            super().configure(**kw)
+
+    config = configure
+
+
 def btn(parent, text, cmd, color=None, **kw):
-    bg = color or C["card"]
-    return tk.Button(parent, text=text, command=cmd,
-        bg=bg, fg=C["text"], activebackground=C["accent"],
-        activeforeground=C["text"], disabledforeground=C["muted"],
-        highlightbackground=bg, highlightthickness=0,
-        relief=tk.FLAT, font=("Arial", 11, "bold"),
-        cursor="hand2", padx=14, pady=8, bd=0, **kw)
+    return _Btn(parent, text, cmd, bg=color or C["card"], **kw)
 
 
 class DedupCleanerApp:
