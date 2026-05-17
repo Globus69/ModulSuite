@@ -1,0 +1,148 @@
+# File Merge - Ordner-Zusammenführung & Duplikat-Bereinigung
+
+## Überblick
+Tool zum Bereinigen verschachtelter Ordnerstrukturen. Führt mehrere Quellordner in einen Zielordner zusammen, entfernt bitgenau identische Duplikate, verschiebt Dateien (statt kopieren) und räumt leere Ordner auf.
+
+## Hauptfunktionen
+
+### 1. Zusammenführen
+- Mehrere Quellordner → 1 Zielordner
+- Relative Ordnerstruktur bleibt erhalten
+- Intelligentes Ordner-Matching mit einstellbarer Ähnlichkeit
+- Bitgenaue Duplikat-Erkennung (Quelldatei wird gelöscht)
+- Bei Namenskollision mit unterschiedlichem Inhalt: Nummerierung (name_1.ext, name_2.ext)
+- Automatisches Aufräumen leerer Quellordner
+
+### 2. Duplikate bereinigen
+- Findet nummerierte Dateivarianten (name_1.ext, name_2.ext)
+- Löscht bitgenau identische Duplikate
+- Behält unterschiedliche Dateien
+
+### 3. Leere Ordner löschen
+- Rekursives Entfernen leerer Unterordner
+- Mehrere Durchläufe (von unten nach oben)
+- Ignoriert OS-Metadateien (.DS_Store, Thumbs.db)
+
+## Parameter
+
+| Parameter | Beschreibung | Standard |
+|-----------|-------------|----------|
+| **Zielordner** | Ordner, in den zusammengeführt wird | Pflichtfeld |
+| **Quellordner** | Ordner, deren Inhalte verschoben werden (mind. 1) | Pflichtfeld |
+| **Ordner-Ähnlichkeit** | Schwellenwert 0-100% für Ordnernamen-Matching | 100% |
+| **Dateinamen-Toleranz** | Schwellenwert 0-100% für Duplikat-Erkennung | 100% |
+
+## Schwellwert-Verhalten
+
+### Ordner-Ähnlichkeit: 100%
+- Nur **exakt identische** Ordnernamen werden zusammengeführt
+- Keine Dialoge (automatische Entscheidung)
+- `Projekte` ✅ matched `Projekte`
+- `Projekte` ❌ matched NICHT `Projekt` → neuer Ordner
+
+### Ordner-Ähnlichkeit: 70-99%
+- Bei Übereinstimmung >= Schwellenwert: **Dialog erscheint**
+- Benutzer entscheidet: "Ja" (zusammenführen) / "Nein" (neuer Ordner) / "Abbruch"
+- Mehr Flexibilität, aber manuelle Entscheidungen nötig
+
+### Dateinamen-Toleranz: 100%
+- Nur exakt gleiche Dateinamen werden als Duplikate geprüft
+- `foto.jpg` ✅ wird mit `foto.jpg` verglichen
+- `foto.jpg` ❌ wird NICHT mit `Foto.jpg` verglichen
+- Weniger Treffer, aber sicherer
+
+## Eingangsbedingungen
+- Zielordner darf nicht innerhalb eines Quellordners liegen (und umgekehrt)
+- Schreib-/Leserechte für alle Ordner erforderlich
+- Quellordner ≠ Zielordner
+
+## Erwartetes Ergebnis
+
+**Nach der Zusammenführung:**
+- Alle Dateien aus Quellordnern sind in Zielordner verschoben (nicht kopiert!)
+- Relative Ordnerstruktur erhalten
+- Bitgenau identische Duplikate gelöscht
+- Bei Namenskollision mit unterschiedlichem Inhalt: nummerierte Varianten
+- Leere Quellordner entfernt
+- Log-Datei `merge_log.txt` im Zielordner dokumentiert alle Aktionen
+
+## Geschützte Bereiche
+- Ordner mit Namen `_Quelle` werden **niemals** verarbeitet
+- Bei Fehler: Quelldatei wird **nie** gelöscht (sicheres Verhalten)
+
+## Selbsttest-Szenarien
+
+### Test 1: Einfache Zusammenführung
+```
+Quelle1/foto.jpg (5 KB)
+Quelle2/dokument.pdf (10 KB)
+→ Ziel/foto.jpg + Ziel/dokument.pdf
+```
+
+### Test 2: Duplikat-Erkennung
+```
+Quelle1/bild.png (Hash: ABC123)
+Quelle2/bild.png (Hash: ABC123)
+→ Ziel/bild.png (eine Datei gelöscht)
+```
+
+### Test 3: Namenskollision
+```
+Quelle1/report.txt ("Version A")
+Quelle2/report.txt ("Version B")
+→ Ziel/report.txt + Ziel/report_1.txt
+```
+
+### Test 4: Verschachtelte Ordner (100% Match)
+```
+Quelle/Projekte/2024/code.py
+Ziel/Projekte/ (existiert)
+→ Ziel/Projekte/2024/code.py
+```
+
+### Test 5: Ordner-Ähnlichkeit (70% Schwelle)
+```
+Quelle/Urlaubsfotos/bild1.jpg
+Ziel/Urlaub_Fotos/ (80% Ähnlichkeit)
+→ Dialog: "Zusammenführen?" → Bei "Ja": Ziel/Urlaub_Fotos/bild1.jpg
+```
+
+### Test 6: Leere Ordner aufräumen
+```
+Quelle/A/B/datei.txt
+→ Nach Verschieben: Quelle/A/B/ gelöscht (leer)
+```
+
+### Test 7: Geschützte Ordner
+```
+Quelle/_Quelle/wichtig.dat
+→ Wird NICHT verarbeitet (bleibt unverändert)
+```
+
+### Test 8: Verschachtelung blockiert
+```
+Ziel: /Users/test/Merge
+Quelle: /Users/test/Merge/Backup
+→ Fehlermeldung: Vorgang wird nicht gestartet
+```
+
+## Technische Details
+- Bitweiser Dateivergleich in 64 KB Chunks (schneller Abbruch bei unterschiedlicher Größe)
+- Namensähnlichkeit via difflib.SequenceMatcher
+- Thread-basierte GUI (tkinter) mit modalen Dialogen
+- Logging aller Aktionen in merge_log.txt
+
+## Starten
+```bash
+./start.command
+```
+oder
+```bash
+python3 file_merge.py
+```
+
+## Empfehlungen
+- **100% Schwellwert**: Sicher, konservativ, keine Überraschungen
+- **70-95% Schwellwert**: Flexibler, findet ähnliche Ordner, erfordert manuelle Entscheidungen
+- Vor dem ersten Einsatz: Backup erstellen!
+- Log-Datei prüfen nach Abschluss

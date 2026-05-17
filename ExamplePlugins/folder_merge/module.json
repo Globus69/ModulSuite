@@ -1,6 +1,0 @@
-{
-  "name": "Folder Merge",
-  "description": "Führt mehrere Ordner zusammen und entfernt Duplikate",
-  "icon": "📂",
-  "script": "launch.sh"
-}

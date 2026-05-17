@@ -1,6 +1,0 @@
-{
-  "name": "File Counter",
-  "description": "Zählt Dateien im Home-Verzeichnis",
-  "icon": "📁",
-  "script": "script.sh"
-}

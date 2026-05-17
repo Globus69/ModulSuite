@@ -1,6 +1,0 @@
-{
-  "name": "System Info",
-  "description": "Zeigt Systeminformationen an",
-  "icon": "💻",
-  "script": "script.sh"
-}

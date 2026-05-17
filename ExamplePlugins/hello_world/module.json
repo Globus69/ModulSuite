@@ -1,6 +1,0 @@
-{
-  "name": "Hello World",
-  "description": "Ein einfaches Test-Modul",
-  "icon": "👋",
-  "script": "script.sh"
-}

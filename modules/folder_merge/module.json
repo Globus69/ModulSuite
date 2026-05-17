@@ -1,8 +1,0 @@
-{
-  "name": "Folder Merge",
-  "description": "Führt Ordner zusammen, bereinigt Duplikate",
-  "icon": "📁",
-  "version": "1.0",
-  "script": "file_merge.py",
-  "launch_mode": "gui"
-}
